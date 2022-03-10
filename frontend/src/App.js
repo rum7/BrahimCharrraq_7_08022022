@@ -47,7 +47,7 @@ const App = () => {
           </Route>
           <Route path="/*" element={<Connected />}>
             <Route path="home" element={<Home />} />
-            <Route path="profile/id/:id" element={<Profile />} />
+            <Route path="profile/:id" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

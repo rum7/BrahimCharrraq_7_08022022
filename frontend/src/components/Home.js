@@ -123,7 +123,7 @@ const Dashboard = () => {
               <div className="media">
                 <div className="media-left">
                   <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'images/profilepictures/' + userImg} alt='pp' />
+                    <img className="userImg is-rounded" src={'images/profilepictures/' + userImg} alt='pp' />
                   </figure>
                 </div>
                 <div className="media-content">

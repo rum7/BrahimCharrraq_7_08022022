@@ -65,7 +65,7 @@ const Header = () => {
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to={'profile/id/' + myId} onClick={() => navigate(`/profile/id/${myId}`)} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                            <NavLink to={'profile/' + myId} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
                                 <span>Mon profil</span>
                             </NavLink>
                         </li>

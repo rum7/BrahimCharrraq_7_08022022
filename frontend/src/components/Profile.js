@@ -132,7 +132,7 @@ const Dashboard = () => {
               <div className="media">
                 <div className="media-left">
                   <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'images/profilepictures/' + user.userImg} alt='pp' />
+                  <img className="userImg is-rounded" src={'../images/profilepictures/' + user.userImg} alt='pp' />
                   </figure>
                 </div>
                 <div className="media-content">
@@ -172,7 +172,7 @@ const Dashboard = () => {
             <tbody>
               {users.map((user, index) => (
                 <tr key={user.id}>
-                  <td><figure className="image is-96x96"><img id="imgPreview" src={'images/profilepictures/' + user.userImg} alt='pp' /></figure></td>
+                  <td><figure className="image is-96x96"><img id="imgPreview" src={'../images/profilepictures/' + user.userImg} alt='pp' /></figure></td>
                   {/* <td>{user.image}</td> */}
                   <td>{user.id}</td>
                   <td>{user.prenom}</td>
