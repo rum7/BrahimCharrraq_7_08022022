@@ -65,8 +65,8 @@ const Header = () => {
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to={'profile/' + myId} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
-                                <span>Mon profil</span>
+                            <NavLink to={'profile/' + myId} onClick={() => navigate(`/profile/${myId}`, { replace: true })} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                                <span>Profil</span>
                             </NavLink>
                         </li>
                         <li>

@@ -1,10 +1,16 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, NavLink, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+
+import TimeAgo from 'timeago-react';
+import * as timeago from 'timeago.js';
+import fr from 'timeago.js/lib/lang/fr';
+timeago.register('fr', fr);
+
 
 const Dashboard = () => {
   const [myId, setId] = useState('');
@@ -15,20 +21,18 @@ const Dashboard = () => {
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [user, setUser] = useState([]);
-  const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [msg, setMsg] = useState('');
   const navigate = useNavigate(); 
 
   const { id } = useParams();
-  // console.log("test user info");
-  // console.log(id);
-  
+  const location = useLocation()
+
   useEffect(() => {
       refreshToken();
       getUser();
-      getUsers();
-  }, []);
+      getPosts();
+  }, [location.key]);
 
   const refreshToken = async () => {
       try {
@@ -68,27 +72,6 @@ const Dashboard = () => {
       return Promise.reject(error);
   });
 
-  const getUser = async () => {
-      const response = await axiosJWT.get(`http://localhost:5000/users/id/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUser(response.data);
-      // console.log("test user info");
-      //console.log(user.userImg);
-      // console.log(user.nom)
-      // console.log(user.prenom)
-      // console.log(user.userImg)
-  };
-
-  const getUsers = async () => {
-    const response = await axiosJWT.get('http://localhost:5000/users', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    setUsers(response.data);
-}
-
   const initialValues = {
     nom: `${nom}`,
     prenom: `${prenom}`,
@@ -115,8 +98,8 @@ const Dashboard = () => {
           postImg: data.postImg
         };
         setPosts([...posts, postToAdd]);
-        // navigate("/home", { replace: true });
-        window.location.reload();
+        navigate("/home", { replace: true });
+        // window.location.reload();
     } catch (error) {
         if (error.response) {
             setMsg(error.response.data.msg);
@@ -124,10 +107,32 @@ const Dashboard = () => {
     }
   };
 
+  const getPosts = async () => {
+    const response = await axiosJWT.get(`http://localhost:5000/posts/id/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    setPosts(response.data);
+  }
+
+  const getUser = async () => {
+    const response = await axiosJWT.get(`http://localhost:5000/users/id/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    setUser(response.data);
+  }
+
+  const LastSeen = (date) => {
+    return (<TimeAgo datetime={date} locale='fr' />);
+  }
+
   return(
     <>
         <section className="mesInfos">
-          <div className="card">
+          <div className="card mb-5 has-background-info-light">
             <div className="card-content">
               <div className="media">
                 <div className="media-left">
@@ -136,53 +141,95 @@ const Dashboard = () => {
                   </figure>
                 </div>
                 <div className="media-content">
-                  <div className="publish-post">
-                    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema} enableReinitialize={true}>
-                      <Form>
-                        { msg ? (<p className="notification is-danger is-size-6 p-2 mt-1">{msg}</p>) : ("")}
-                        <div className="field">
-                          <div className="controls grow-wrap">
-                            <Field name="postMsg" as="textarea" placeholder={'Alors ' + user.prenom +', quoi de neuf ?' } autoComplete="off" className="textarea is-dark-light" rows="2"></Field>
-                          </div>
-                          <ErrorMessage name="postMsg" component="p" className="notification is-danger is-italic is-light p-2 mt-2" />
-                        </div>
-                        <button type='submit' className="button is-pulled-right is-link is-outlined mt-4">Envoyer</button>
-                      </Form>
-                    </Formik>
-                  </div>
+                  <p className="title is-size-6 has-text-info-dark mb-5">
+                  {user.prenom} {user.nom} <span className="has-text-grey has-text-weight-light">{user.email}</span>
+                  </p>
+                  <p className="subtitle is-italic is-size-7 has-text-grey"> À rejoint l'équipe {LastSeen(user.createdAt)}</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="tousLesMessages mt-5">
-        <h2 className="title is-6 mb-2 px-2 pt-1 pb-2 has-background-link has-text-light box">Tous les membres</h2>
-        <table className="table is-striped is-fullwidth mb-2">
-            <thead>
-                <tr>
-                  <th>img</th>
-                  <th>id</th>
-                  <th>Prénom</th>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  {/* <th>Del</th> */}
-                </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id}>
-                  <td><figure className="image is-96x96"><img id="imgPreview" src={'../images/profilepictures/' + user.userImg} alt='pp' /></figure></td>
-                  {/* <td>{user.image}</td> */}
-                  <td>{user.id}</td>
-                  <td>{user.prenom}</td>
-                  <td>{user.nom}</td>
-                  <td>{user.email}</td>
-                  {/* <td><button onClick={() => {delUser(user.id)}} className="button is-danger is-fullwidth is-outlined">Supprimer</button></td> */}
-                </tr>
-              ))}
-            </tbody>
-        </table>
+        {/* <section className="mesInfos">
+          <div className="card">
+            <div className="card-content">
+              <div className="media">
+                <div className="media-left">
+                  <figure className="image is-48x48">
+                  <img className="userImg is-rounded" src={'../images/profilepictures/' + userImg} alt='pp' />
+                  </figure>
+                </div>
+                <div className="media-content">
+                  { `${myId}` === `${id}` ?
+                  (<div className="publish-post">
+                    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema} enableReinitialize={true}>
+                      <Form>
+                        { msg ? (<p className="notification is-danger is-size-6 p-2 mt-1">{msg}</p>) : ("")}
+                        <div className="field">
+                          <div className="controls grow-wrap">
+                            <Field name="postMsg" as="textarea" placeholder={'Alors ' + prenom +', quoi de neuf ?' } autoComplete="off" className="textarea is-dark-light" rows="2"></Field>
+                          </div>
+                          <ErrorMessage name="postMsg" component="p" className="notification is-danger is-italic is-light p-2 mt-2" />
+                        </div>
+                        <button type='submit' className="button is-pulled-right is-link is-outlined mt-4">Envoyer</button>
+                      </Form>
+                    </Formik>
+                  </div>)
+                  :
+                  ("")
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </section> */}
+
+        <section className="tousLesMessages">
+          {posts.slice(0).reverse().map((post, index) => {
+          return `${myId}` === `${id}` ?
+          <div key={index} className="card mb-5">
+            <div className="card-content">
+              <div className="media">
+                <div className="media-left">
+                  <figure className="image is-48x48">
+                  <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
+                  </figure>
+                </div>
+                <div className="media-content">
+                  <p className="title is-size-6 has-text-info-dark">
+                  {post.prenom} {post.nom} <span className="has-text-grey has-text-weight-light">{post.email}</span>
+                  </p>
+                  <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                </div>
+              </div>
+              <div className="content">
+                <p>{post.postMsg}</p>
+              </div>
+            </div>
+          </div>
+          :
+          <div key={index} className="card mb-5">
+          <div className="card-content">
+            <div className="media">
+              <div className="media-left">
+                <figure className="image is-48x48">
+                <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
+                </figure>
+              </div>
+              <div className="media-content">
+                <p className="title is-size-6 has-text-grey-dark">
+                {post.prenom} {post.nom} <span className="has-text-grey has-text-weight-light">{post.email}</span>
+                </p>
+                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+              </div>
+            </div>
+            <div className="content">
+              <p>{post.postMsg}</p>
+            </div>
+          </div>
+        </div>
+        })}
         </section>
     </>
   );

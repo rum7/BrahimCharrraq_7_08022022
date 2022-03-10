@@ -1,6 +1,17 @@
 import Posts from "../models/PostModel.js";
 import Users from "../models/UserModel.js";
 
+export const getMyPosts = async(req, res) => {
+    try {
+        const posts = await Posts.findAll({
+            where:{ userId: req.params.id }
+        });
+        res.json(posts);
+    } catch (error) {
+        res.json({ msg: error.msg });
+    }  
+}
+
 export const getPosts = async(req, res) => {
     try {
         const posts = await Posts.findAll({});

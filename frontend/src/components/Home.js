@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -24,10 +24,12 @@ const Dashboard = () => {
   const [msg, setMsg] = useState('');
   const navigate = useNavigate(); 
 
+  const location = useLocation();
+
   useEffect(() => {
       refreshToken();
       getPosts();
-  }, []);
+  }, [location.key]);
 
   const refreshToken = async () => {
       try {
@@ -93,8 +95,8 @@ const Dashboard = () => {
           postImg: data.postImg
         };
         setPosts([...posts, postToAdd]);
-        // navigate("/home", { replace: true });
-        window.location.reload();
+        navigate("/home", { replace: true });
+        // window.location.reload();
     } catch (error) {
         if (error.response) {
             setMsg(error.response.data.msg);
@@ -123,7 +125,7 @@ const Dashboard = () => {
               <div className="media">
                 <div className="media-left">
                   <figure className="image is-48x48">
-                    <img className="userImg is-rounded" src={'images/profilepictures/' + userImg} alt='pp' />
+                  <img className="userImg is-rounded" src={'images/profilepictures/' + userImg} alt='pp' />
                   </figure>
                 </div>
                 <div className="media-content">
@@ -160,10 +162,9 @@ const Dashboard = () => {
                 </div>
                 <div className="media-content">
                 <p className="title is-size-6 has-text-info-dark">
-                <NavLink to={'profile/id/' + post.userId} onClick={() => navigate(`/profile/id/${post.userId}`)} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
-                {post.prenom} {post.nom}</NavLink> <span className="has-text-grey has-text-weight-light">{post.email}</span>
+                  <NavLink to={'../profile/' + post.userId} className="">
+                  {post.prenom} {post.nom} </NavLink> <span className="has-text-grey has-text-weight-light">{post.email}</span>
                 </p>
-                {/* <p className="subtitle is-size-7 has-text-info">{LastSeen(post.createdAt)}</p> */}
                 <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
                 </div>
               </div>
@@ -183,11 +184,10 @@ const Dashboard = () => {
               </div>
               <div className="media-content">
                 <p className="title is-size-6 has-text-grey-dark">
-                <NavLink to={'profile/id/' + post.userId} onClick={() => navigate(`/profile/id/${post.userId}`)} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
-                {post.prenom} {post.nom}</NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
+                  <NavLink to={'../profile/' + post.userId} className="">
+                  {post.prenom} {post.nom} </NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
                 </p>
-                {/* <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p> */}
-                {/* <p className="subtitle is-size-7 has-text-grey">{<ReactTimeAgo date={new Date(post.createdAt)} timeStyle="twitter" locale="en-US"/>}</p> */}
+                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
               </div>
             </div>
             <div className="content">
