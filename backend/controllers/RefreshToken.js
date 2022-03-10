@@ -6,9 +6,7 @@ export const refreshToken = async(req, res) => {
         const refreshToken = req.cookies.refreshToken;
         if(!refreshToken) return res.sendStatus(401);
         const user = await Users.findAll({
-            where:{
-                refresh_token: refreshToken
-            }
+            where:{ refresh_token: refreshToken }
         });
         if(!user[0]) return res.sendStatus(403);
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
@@ -16,9 +14,9 @@ export const refreshToken = async(req, res) => {
             const userId = user[0].id;
             const nom = user[0].nom;
             const prenom = user[0].prenom;
-            const image = user[0].image;
+            const userImg = user[0].userImg;
             const email = user[0].email;
-            const accessToken = jwt.sign({userId, nom, prenom, image, email}, process.env.ACCESS_TOKEN_SECRET,{
+            const accessToken = jwt.sign({userId, nom, prenom, userImg, email}, process.env.ACCESS_TOKEN_SECRET,{
                 expiresIn: '15s'
             });
             res.json({ accessToken });

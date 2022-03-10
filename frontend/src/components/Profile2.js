@@ -15,7 +15,6 @@ const Dashboard = () => {
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [user, setUser] = useState([]);
-  const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [msg, setMsg] = useState('');
   const navigate = useNavigate(); 
@@ -27,7 +26,6 @@ const Dashboard = () => {
   useEffect(() => {
       refreshToken();
       getUser();
-      getUsers();
   }, []);
 
   const refreshToken = async () => {
@@ -80,15 +78,6 @@ const Dashboard = () => {
       // console.log(user.userImg)
   };
 
-  const getUsers = async () => {
-    const response = await axiosJWT.get('http://localhost:5000/users', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    setUsers(response.data);
-}
-
   const initialValues = {
     nom: `${nom}`,
     prenom: `${prenom}`,
@@ -132,7 +121,7 @@ const Dashboard = () => {
               <div className="media">
                 <div className="media-left">
                   <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'images/profilepictures/' + user.userImg} alt='pp' />
+                    <img className="userImg is-rounded" src={'images/profilepictures/' + user.userImg} alt='pp' />
                   </figure>
                 </div>
                 <div className="media-content">
@@ -157,32 +146,7 @@ const Dashboard = () => {
         </section>
 
         <section className="tousLesMessages mt-5">
-        <h2 className="title is-6 mb-2 px-2 pt-1 pb-2 has-background-link has-text-light box">Tous les membres</h2>
-        <table className="table is-striped is-fullwidth mb-2">
-            <thead>
-                <tr>
-                  <th>img</th>
-                  <th>id</th>
-                  <th>Prénom</th>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  {/* <th>Del</th> */}
-                </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id}>
-                  <td><figure className="image is-96x96"><img id="imgPreview" src={'images/profilepictures/' + user.userImg} alt='pp' /></figure></td>
-                  {/* <td>{user.image}</td> */}
-                  <td>{user.id}</td>
-                  <td>{user.prenom}</td>
-                  <td>{user.nom}</td>
-                  <td>{user.email}</td>
-                  {/* <td><button onClick={() => {delUser(user.id)}} className="button is-danger is-fullwidth is-outlined">Supprimer</button></td> */}
-                </tr>
-              ))}
-            </tbody>
-        </table>
+
         </section>
     </>
   );

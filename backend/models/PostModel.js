@@ -1,23 +1,23 @@
 import { Sequelize } from "sequelize";
 import db from "../config/Database.js";
-import Posts from "./PostModel.js";
+import Comments from "./CommentModel.js";
 
 const { DataTypes } = Sequelize;
 
-const Users = db.define('users',
+const Posts = db.define('Posts',
     {
         nom: { type: DataTypes.STRING, allowNull: false },
         prenom: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, allowNull: false },
         userImg: { type: DataTypes.STRING, allowNull: true },
-        password: { type: DataTypes.STRING, allowNull: false },
-        refresh_token: { type: DataTypes.TEXT }
+        postMsg: { type: DataTypes.STRING, allowNull: false },
+        postImg: { type: DataTypes.STRING, allowNull: true }
     }
 );
 
-Users.hasMany(Posts);
-Posts.belongsTo(Users);
+Posts.hasMany(Comments);
+Comments.belongsTo(Posts);
 
 // (async () => { await db.sync(); })();
 
-export default Users;
+export default Posts;

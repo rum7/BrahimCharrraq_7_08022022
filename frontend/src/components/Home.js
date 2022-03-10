@@ -1,90 +1,204 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React from "react";
 import { useState, useEffect } from "react";
+import { useNavigate, NavLink } from "react-router-dom";
+import axios from "axios";
+import jwt_decode from "jwt-decode";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
-class Title extends React.Component {
-  render() {
-    return (
-      <>
-        <h2 className="title is-6 has-text-light mb-2 px-2 pt-1 pb-2 has-background-info box">Messages récent</h2>
-      </>
-    );
+import TimeAgo from 'timeago-react';
+import * as timeago from 'timeago.js';
+import fr from 'timeago.js/lib/lang/fr';
+timeago.register('fr', fr);
+
+
+const Dashboard = () => {
+  const [myId, setId] = useState('');
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [userImg, setUserImg] = useState('');
+  const [email, setEmail] = useState('');
+  const [token, setToken] = useState('');
+  const [expire, setExpire] = useState('');
+  const [posts, setPosts] = useState([]);
+  const [msg, setMsg] = useState('');
+  const navigate = useNavigate(); 
+
+  useEffect(() => {
+      refreshToken();
+      getPosts();
+  }, []);
+
+  const refreshToken = async () => {
+      try {
+          const response = await axios.get('http://localhost:5000/users/token');
+          setToken(response.data.accessToken);
+          const decoded = jwt_decode(response.data.accessToken);
+          setId(decoded.userId);
+          setNom(decoded.nom);
+          setPrenom(decoded.prenom);
+          setUserImg(decoded.userImg);
+          setEmail(decoded.email);
+          setExpire(decoded.exp);
+      } catch (error) {
+          if (error.response) {
+            navigate("/", { replace: true });
+          }
+      }
   }
-}
 
-class LastMessages extends React.Component {
-  render() {
-    return (
-      <section className="hero has-background-light box">
-        <article className="media">
-          <figure className="media-left">
-            <p className="image is-64x64"><img src="https://bulma.io/images/placeholders/128x128.png"/></p>
-          </figure>
-          <div className="media-content">
-            <div className="content">
-              <p>
-                <strong>Batman</strong>
-                <br/>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis porta eros lacus, nec ultricies elit blandit non. 
-                Suspendisse pellentesque mauris sit amet dolor blandit rutrum. Nunc in tempus turpis.
-                <br/>
-                <small><a>Like</a> · <a>Reply</a> · 3 hrs</small>
-              </p>
-            </div>
+  const axiosJWT = axios.create();
 
-            <article className="media">
-              <figure className="media-left">
-                <p className="image is-48x48">
-                  <img src="https://bulma.io/images/placeholders/96x96.png"/>
-                </p>
-              </figure>
-              <div className="media-content">
-                <div className="content">
-                  <p>
-                    <strong>Joker</strong>
-                    <br/>
-                    Donec sollicitudin urna eget eros malesuada sagittis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aliquam blandit nisl a nulla sagittis, a lobortis leo feugiat.
-                    <br/>
-                    <small><a>Like</a> · <a>Reply</a> · 2 hrs</small>
-                  </p>
-                </div>
-              </div>
-            </article>
+  axiosJWT.interceptors.request.use(async (config) => {
+      const currentDate = new Date();
+      if (expire * 1000 < currentDate.getTime()) {
+          const response = await axios.get('http://localhost:5000/users/token');
+          config.headers.Authorization = `Bearer ${response.data.accessToken}`;
+          setToken(response.data.accessToken);
+          const decoded = jwt_decode(response.data.accessToken);
+          setNom(decoded.nom);
+          setPrenom(decoded.prenom);
+          setUserImg(decoded.userImg);
+          setEmail(decoded.email);
+          setExpire(decoded.exp);
+      }
+      return config;
+  }, (error) => {
+      return Promise.reject(error);
+  });
 
-          </div>
-        </article>
+  const initialValues = {
+    nom: `${nom}`,
+    prenom: `${prenom}`,
+    email: `${email}`,
+    userImg: `${userImg}`,
+    postMsg: "",
+    postImg: ""
+  };
 
-        <article className="media">
-          <figure className="media-left">
-            <p className="image is-64x64">
-              <img src="https://bulma.io/images/placeholders/128x128.png"/>
-            </p>
-          </figure>
-          <div className="media-content">
-            <div className="field">
-              <p className="control">
-                <textarea className="textarea" placeholder="Add a comment..."></textarea>
-              </p>
-            </div>
-            <div className="field">
-              <p className="control">
-                <button className="button">Post comment</button>
-              </p>
-            </div>
-          </div>
-        </article>
-      </section>
-    );
+  const validationSchema = Yup.object().shape({
+    postMsg: Yup.string().min(1, "Le message doit contenir au moins 1 caractère").required("")
+  });
+
+  const onSubmit = async (data) => {
+    console.log(data);
+    try {
+        await axios.post('http://localhost:5000/posts', data);
+        const postToAdd = {
+          nom: `${nom}`,
+          prenom: `${prenom}`,
+          email: `${email}`,
+          userImg: `${userImg}`,
+          postMsg: data.postMsg,
+          postImg: data.postImg
+        };
+        setPosts([...posts, postToAdd]);
+        // navigate("/home", { replace: true });
+        window.location.reload();
+    } catch (error) {
+        if (error.response) {
+            setMsg(error.response.data.msg);
+        }
+    }
+  };
+
+  const getPosts = async () => {
+    const response = await axiosJWT.get('http://localhost:5000/posts', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    setPosts(response.data);
   }
-}
 
-const Feed = () => {
+  const LastSeen = (date) => {
+    return (<TimeAgo datetime={date} locale='fr' />);
+  }
+
   return(
     <>
-      <Title />
-      <LastMessages />
+        <section className="mesInfos">
+          <div className="card">
+            <div className="card-content">
+              <div className="media">
+                <div className="media-left">
+                  <figure className="image is-48x48">
+                  <img className="userImg is-rounded" src={'images/profilepictures/' + userImg} alt='pp' />
+                  </figure>
+                </div>
+                <div className="media-content">
+                  <div className="publish-post">
+                    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema} enableReinitialize={true}>
+                      <Form>
+                        { msg ? (<p className="notification is-danger is-size-6 p-2 mt-1">{msg}</p>) : ("")}
+                        <div className="field">
+                          <div className="controls grow-wrap">
+                            <Field name="postMsg" as="textarea" placeholder={'Alors ' + prenom +', quoi de neuf ?' } autoComplete="off" className="textarea is-dark-light" rows="2"></Field>
+                          </div>
+                          <ErrorMessage name="postMsg" component="p" className="notification is-danger is-italic is-light p-2 mt-2" />
+                        </div>
+                        <button type='submit' className="button is-pulled-right is-link is-outlined mt-4">Envoyer</button>
+                      </Form>
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="tousLesMessages mt-5">
+          {posts.slice(0).reverse().map((post, index) => {
+          return post.nom === `${nom}` ?
+          <div key={index} className="card mb-5">
+            <div className="card-content">
+              <div className="media">
+                <div className="media-left">
+                  <figure className="image is-48x48">
+                  <img className="userImg is-rounded" src={'images/profilepictures/' + post.userImg} alt='pp' />
+                  </figure>
+                </div>
+                <div className="media-content">
+                <p className="title is-size-6 has-text-info-dark">
+                <NavLink to={'profile/id/' + post.userId} onClick={() => navigate(`/profile/id/${post.userId}`)} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                {post.prenom} {post.nom}</NavLink> <span className="has-text-grey has-text-weight-light">{post.email}</span>
+                </p>
+                {/* <p className="subtitle is-size-7 has-text-info">{LastSeen(post.createdAt)}</p> */}
+                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                </div>
+              </div>
+              <div className="content">
+                <p>{post.postMsg}</p>
+              </div>
+            </div>
+          </div>
+          :
+          <div key={index} className="card mb-5">
+          <div className="card-content">
+            <div className="media">
+              <div className="media-left">
+                <figure className="image is-48x48">
+                <img className="userImg is-rounded" src={'images/profilepictures/' + post.userImg} alt='pp' />
+                </figure>
+              </div>
+              <div className="media-content">
+                <p className="title is-size-6 has-text-grey-dark">
+                <NavLink to={'profile/id/' + post.userId} onClick={() => navigate(`/profile/id/${post.userId}`)} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                {post.prenom} {post.nom}</NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
+                </p>
+                {/* <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p> */}
+                {/* <p className="subtitle is-size-7 has-text-grey">{<ReactTimeAgo date={new Date(post.createdAt)} timeStyle="twitter" locale="en-US"/>}</p> */}
+              </div>
+            </div>
+            <div className="content">
+              <p>{post.postMsg}</p>
+            </div>
+          </div>
+        </div>
+        })}
+        </section>
     </>
   );
-};
+}
 
-export default Feed
+export default Dashboard

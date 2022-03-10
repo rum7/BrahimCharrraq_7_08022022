@@ -1,18 +1,19 @@
-import Header from "./components/Header";
-import Nav from "./components/Nav";
+import "../src/app.css";
+import HeaderIn from "./components/Header-in";
+import HeaderOut from "./components/Header-out";
 import Footer from "./components/Footer";
-import Settings from "./components/Settings";
-import Profile from "./components/Profile";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { Navigate } from 'react-router-dom';
-import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import Home from "./components/Home";
+import Profile from "./components/Profile";
+import Settings from "./components/Settings";
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useParams } from "react-router-dom";
 
 function Logout() {
   return(
     <>
-      <Header />
-      <main className="has-background-white-ter	px-6 pt-5 pb-6">
+      <HeaderOut />
+      <main className="layout">
         <Outlet />
       </main>
       <Footer />
@@ -23,8 +24,8 @@ function Logout() {
 function Connected() {
   return(
     <>
-      <Nav />
-      <main className="has-background-white-ter	px-6 pt-5 pb-6">
+      <HeaderIn />
+      <main className="layout">
         <Outlet />
       </main>
       <Footer />
@@ -33,25 +34,24 @@ function Connected() {
 }
 
 const App = () => {
+  let { id } = useParams();
+
   return (
-    <div className="container">
-      <div className="columns">
-        <div className="column is-three-fifths is-offset-one-fifth pb-0">
-          <Router>
-            <Routes>
-              <Route path="/*" element={<Logout />}>
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-                <Route path="*" element={<Navigate to="/Login" replace />} />
-              </Route>
-              <Route path="/*" element={<Connected />}>
-                <Route path="profile" element={<Profile />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
-            </Routes>
-          </Router>
-        </div>
-      </div>
+    <div className="container is-fluid p-0">
+      <Router>
+        <Routes>
+          <Route path="/*" element={<Logout />}>
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/Login" replace />} />
+          </Route>
+          <Route path="/*" element={<Connected />}>
+            <Route path="home" element={<Home />} />
+            <Route path="profile/id/:id" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </Router>
     </div>
   );
 }
