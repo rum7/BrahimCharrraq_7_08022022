@@ -177,8 +177,7 @@ const Dashboard = () => {
                   </div>
                   <div className="media-content">
                     <p className="title is-size-6 has-text-info-dark">
-                      <NavLink to={'../profile/' + post.userId} className={isAdmin == 1 && post.userId == myId ? 
-                        ("title is-size-6 p-1 has-text-danger mb-5") : ("title is-size-6 p-1 has-text-info-dark mb-5")}>
+                      <NavLink to={'../profile/' + post.userId} className="title is-size-6 p-1 has-text-info-dark mb-5">
                       {post.prenom} {post.nom}</NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
                     </p>
                     <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>

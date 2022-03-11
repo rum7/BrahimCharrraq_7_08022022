@@ -11,17 +11,11 @@ timeago.register('fr', fr);
 
 
 const Dashboard = () => {
-  const [myId, setId] = useState('');
-  const [nom, setNom] = useState('');
-  const [prenom, setPrenom] = useState('');
-  const [userImg, setUserImg] = useState('');
-  const [email, setEmail] = useState('');
   const [isAdmin, setAdmin] = useState('');
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [user, setUser] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [msg, setMsg] = useState('');
   const navigate = useNavigate(); 
 
   const { id } = useParams();
@@ -38,11 +32,6 @@ const Dashboard = () => {
           const response = await axios.get('http://localhost:5000/users/token');
           setToken(response.data.accessToken);
           const decoded = jwt_decode(response.data.accessToken);
-          setId(decoded.userId);
-          setNom(decoded.nom);
-          setPrenom(decoded.prenom);
-          setUserImg(decoded.userImg);
-          setEmail(decoded.email);
           setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       } catch (error) {
@@ -61,10 +50,6 @@ const Dashboard = () => {
           config.headers.Authorization = `Bearer ${response.data.accessToken}`;
           setToken(response.data.accessToken);
           const decoded = jwt_decode(response.data.accessToken);
-          setNom(decoded.nom);
-          setPrenom(decoded.prenom);
-          setUserImg(decoded.userImg);
-          setEmail(decoded.email);
           setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       }

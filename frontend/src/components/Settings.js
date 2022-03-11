@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [oldUserImg, setOldUserImg] = useState('');
   const [userImgPreview, setUserImgPreview] = useState('');
   const [email, setEmail] = useState('');
+  const [isAdmin, setAdmin] = useState('');
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [msg, setMsg] = useState('');
@@ -34,7 +35,8 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setOldUserImg(decoded.userImg);
-          setEmail(decoded.email);
+          setEmail(decoded.email);          
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       } catch (error) {
           if (error.response) {
@@ -56,6 +58,7 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setEmail(decoded.email);
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       }
       return config;
@@ -134,7 +137,7 @@ const Dashboard = () => {
   return(
     <>
       <div className="message is-dark">
-        <h2 className="message-header has-background-link">Mes informations</h2>
+        <h2 className={isAdmin == 1 ? ("message-header has-background-danger") : ("message-header has-background-link")}>Mes informations</h2>
         <div className="message-body">
           <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema} enableReinitialize={true}>
             <Form>
