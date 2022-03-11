@@ -1,10 +1,8 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate, NavLink, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
 
 import TimeAgo from 'timeago-react';
 import * as timeago from 'timeago.js';
@@ -18,6 +16,7 @@ const Dashboard = () => {
   const [prenom, setPrenom] = useState('');
   const [userImg, setUserImg] = useState('');
   const [email, setEmail] = useState('');
+  const [isAdmin, setAdmin] = useState('');
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [user, setUser] = useState([]);
@@ -44,6 +43,7 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setEmail(decoded.email);
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       } catch (error) {
           if (error.response) {
@@ -65,47 +65,13 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setEmail(decoded.email);
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       }
       return config;
   }, (error) => {
       return Promise.reject(error);
   });
-
-  const initialValues = {
-    nom: `${nom}`,
-    prenom: `${prenom}`,
-    email: `${email}`,
-    userImg: `${userImg}`,
-    postMsg: "",
-    postImg: ""
-  };
-
-  const validationSchema = Yup.object().shape({
-    postMsg: Yup.string().min(1, "Le message doit contenir au moins 1 caractère").required("")
-  });
-
-  const onSubmit = async (data) => {
-    console.log(data);
-    try {
-        await axios.post('http://localhost:5000/posts', data);
-        const postToAdd = {
-          nom: `${nom}`,
-          prenom: `${prenom}`,
-          email: `${email}`,
-          userImg: `${userImg}`,
-          postMsg: data.postMsg,
-          postImg: data.postImg
-        };
-        setPosts([...posts, postToAdd]);
-        navigate("/home", { replace: true });
-        // window.location.reload();
-    } catch (error) {
-        if (error.response) {
-            setMsg(error.response.data.msg);
-        }
-    }
-  };
 
   const getPosts = async () => {
     const response = await axiosJWT.get(`http://localhost:5000/posts/id/${id}`, {
@@ -125,6 +91,33 @@ const Dashboard = () => {
     setUser(response.data);
   }
 
+  const deletePost = async (postId) => {
+    try {
+      if (window.confirm("Voulez-vous vraiment supprimer ce message ?")) {
+        await axios.delete(`http://localhost:5000/posts/id/${postId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // navigate("/profile", { replace: true }); 
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const delUser = async (userId) => {
+    try {
+      if (window.confirm("Voulez-vous vraiment supprimer ce compte ?")) {
+        await axios.delete(`http://localhost:5000/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate("/home", { replace: true }); 
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   const LastSeen = (date) => {
     return (<TimeAgo datetime={date} locale='fr' />);
   }
@@ -132,7 +125,7 @@ const Dashboard = () => {
   return(
     <>
         <section className="mesInfos">
-          <div className="card mb-5 has-background-info-light">
+          <div className={user.isAdmin == 1 ? ("card mb-5 has-background-danger-light") : ("card mb-5 has-background-info-light")}>
             <div className="card-content">
               <div className="media">
                 <div className="media-left">
@@ -141,95 +134,45 @@ const Dashboard = () => {
                   </figure>
                 </div>
                 <div className="media-content">
-                  <p className="title is-size-6 has-text-info-dark mb-5">
-                  {user.prenom} {user.nom} <span className="has-text-grey has-text-weight-light">{user.email}</span>
+                  <p className={user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-5") : ("title is-size-6 has-text-info-dark mb-5")}>
+                    {user.prenom} {user.nom} <span className="has-text-grey has-text-weight-light">{user.email}</span>
                   </p>
                   <p className="subtitle is-italic is-size-7 has-text-grey"> À rejoint l'équipe {LastSeen(user.createdAt)}</p>
                 </div>
+              </div>
+              <div className="content pb-5">
+                {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {delUser(user.id)}}>Supprimer</button>) : ('')}
               </div>
             </div>
           </div>
         </section>
 
-        {/* <section className="mesInfos">
-          <div className="card">
-            <div className="card-content">
-              <div className="media">
-                <div className="media-left">
-                  <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'../images/profilepictures/' + userImg} alt='pp' />
-                  </figure>
-                </div>
-                <div className="media-content">
-                  { `${myId}` === `${id}` ?
-                  (<div className="publish-post">
-                    <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema} enableReinitialize={true}>
-                      <Form>
-                        { msg ? (<p className="notification is-danger is-size-6 p-2 mt-1">{msg}</p>) : ("")}
-                        <div className="field">
-                          <div className="controls grow-wrap">
-                            <Field name="postMsg" as="textarea" placeholder={'Alors ' + prenom +', quoi de neuf ?' } autoComplete="off" className="textarea is-dark-light" rows="2"></Field>
-                          </div>
-                          <ErrorMessage name="postMsg" component="p" className="notification is-danger is-italic is-light p-2 mt-2" />
-                        </div>
-                        <button type='submit' className="button is-pulled-right is-link is-outlined mt-4">Envoyer</button>
-                      </Form>
-                    </Formik>
-                  </div>)
-                  :
-                  ("")
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </section> */}
-
         <section className="tousLesMessages">
-          {posts.slice(0).reverse().map((post, index) => {
-          return `${myId}` === `${id}` ?
-          <div key={index} className="card mb-5">
-            <div className="card-content">
-              <div className="media">
-                <div className="media-left">
-                  <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
-                  </figure>
+          { posts.slice(0).reverse().map((post, index) => {
+            return(
+            <div key={index} className="card mb-5">
+              <div className="card-content">
+                <div className="media">
+                  <div className="media-left">
+                    <figure className="image is-48x48">
+                    <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
+                    </figure>
+                  </div>
+                  <div className="media-content">
+                    <p className={user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-5") : ("title is-size-6 has-text-info-dark mb-5")}>
+                    {post.prenom} {post.nom} <span className="has-text-grey has-text-weight-light">{post.email}</span>
+                    </p>
+                    <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                  </div>
                 </div>
-                <div className="media-content">
-                  <p className="title is-size-6 has-text-info-dark">
-                  {post.prenom} {post.nom} <span className="has-text-grey has-text-weight-light">{post.email}</span>
-                  </p>
-                  <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                <div className="content pb-5">
+                  <p>{post.postMsg}</p>
+                  {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {deletePost(post.id)}}>Supprimer</button>) : ('')}
                 </div>
               </div>
-              <div className="content">
-                <p>{post.postMsg}</p>
-              </div>
             </div>
-          </div>
-          :
-          <div key={index} className="card mb-5">
-          <div className="card-content">
-            <div className="media">
-              <div className="media-left">
-                <figure className="image is-48x48">
-                <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
-                </figure>
-              </div>
-              <div className="media-content">
-                <p className="title is-size-6 has-text-grey-dark">
-                {post.prenom} {post.nom} <span className="has-text-grey has-text-weight-light">{post.email}</span>
-                </p>
-                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
-              </div>
-            </div>
-            <div className="content">
-              <p>{post.postMsg}</p>
-            </div>
-          </div>
-        </div>
-        })}
+            )
+          })}
         </section>
     </>
   );

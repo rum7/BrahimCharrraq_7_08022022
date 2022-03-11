@@ -137,8 +137,9 @@ export const updateUser = async(req, res) => {
 
             if(req.file) {
                 const userImgDel = user[0].userImg;
-                // res.status(400).json({msg: "on est là"});
-                fse.unlink(`../frontend/public/images/profilepictures/${userImgDel}`);    
+                if(userImgDel != "128x128.png") {
+                    fse.unlink(`../frontend/public/images/profilepictures/${userImgDel}`);    
+                }
             }
 
             const userUp = req.file ?
@@ -212,14 +213,32 @@ export const deleteUser = async(req, res) => {
                 refresh_token: refreshToken
             }
         });
+
+        const isAdmin = user[0].isAdmin;
         const userId = user[0].id;
         const req_Id = req.params.id;
-        if(userId == req_Id) {
+
+        const userImgDel = await Users.findOne({ where: { id: req_Id } });
+
+        if (isAdmin == 1) {
+            await Users.destroy({
+                where: {
+                    id: req_Id
+                }
+            });
+            if(userImgDel != "128x128.png") {
+                fse.unlink(`../frontend/public/images/profilepictures/${userImgDel[0].userImg}`);    
+            }            
+            res.json({msg: "Utilisateur supprimé"});
+        } else if(userId == req_Id) {
             await Users.destroy({
                 where: {
                     id: userId
                 }
             });
+            if(userImgDel != "128x128.png") {
+                fse.unlink(`../frontend/public/images/profilepictures/${user[0].userImg}`);    
+            }              
             res.json({msg: "Utilisateur supprimé"});
         } else {
             res.status(400).json({msg: "Autorisation de supprimer cet utilisateur refusée"});

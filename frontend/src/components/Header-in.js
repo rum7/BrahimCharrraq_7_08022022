@@ -6,6 +6,7 @@ import { NavLink, useNavigate  } from 'react-router-dom';
  
 const Header = () => {
     const [myId, setId] = useState('');
+    const [isAdmin, setAdmin] = useState('');
     const [token, setToken] = useState('');
     const [expire, setExpire] = useState('');
     const navigate = useNavigate(); 
@@ -20,6 +21,7 @@ const Header = () => {
             setToken(response.data.accessToken);
             const decoded = jwt_decode(response.data.accessToken);
             setId(decoded.userId);
+            setAdmin(decoded.isAdmin);
             setExpire(decoded.exp);
         } catch (error) {
             if (error.response) {
@@ -37,6 +39,7 @@ const Header = () => {
             config.headers.Authorization = `Bearer ${response.data.accessToken}`;
             setToken(response.data.accessToken);
             const decoded = jwt_decode(response.data.accessToken);
+            setAdmin(decoded.isAdmin);
             setExpire(decoded.exp);
         }
         return config;
@@ -56,27 +59,32 @@ const Header = () => {
     return (
         <>
             <header>
-                <h1 className="py-4 px-3"><img className='is-centered' src="/assets/icon-left-font-monochrome-black.svg" width="200" alt="Groupomania" /></h1>
+                <h1 className=""><img className='is-centered' src={isAdmin == 1 ? ("/assets/icon-left-font.svg") : ("/assets/icon-left-font-monochrome-black.svg") } width="200" alt="Groupomania" /></h1>
                 <div className="tabs is-centered">
                     <ul>
                         <li>
-                            <NavLink to="home" className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                            <NavLink to="home" className={({ isActive }) => (isActive ? 
+                                (isAdmin == 1 ? ('nav-active-admin') : ('nav-active')) : (isAdmin == 1 ? ('inactive-admin') : ('inactive')))}>
                                 <span>Home</span>
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to={'profile/' + myId} onClick={() => navigate(`/profile/${myId}`, { replace: true })} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                            <NavLink to={'profile/' + myId} 
+                                onClick={() => navigate(`/profile/${myId}`, { replace: true })} 
+                                className={({ isActive }) => (isActive ? 
+                                (isAdmin == 1 ? ('nav-active-admin') : ('nav-active')) : (isAdmin == 1 ? ('inactive-admin') : ('inactive')))}>
                                 <span>Profil</span>
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="settings" className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
+                            <NavLink to="settings" className={({ isActive }) => (isActive ? 
+                                (isAdmin == 1 ? ('nav-active-admin') : ('nav-active')) : (isAdmin == 1 ? ('inactive-admin') : ('inactive')))}>
                                 <span>Éditer mon profil</span>
                             </NavLink>
                         </li>
                         <li>
-                            <NavLink to="logout" onClick={Logout} className={({ isActive }) => (isActive ? 'nav-active' : 'inactive')}>
-                                {/* <span className="icon is-small"><i className="fa-right-from-bracket" aria-hidden="true"></i></span> */}
+                            <NavLink to="logout" className={({ isActive }) => (isActive ? 
+                                (isAdmin == 1 ? ('nav-active-admin') : ('nav-active')) : (isAdmin == 1 ? ('inactive-admin') : ('inactive')))}>
                                 <span>Se déconnecter</span>
                             </NavLink>
                         </li>

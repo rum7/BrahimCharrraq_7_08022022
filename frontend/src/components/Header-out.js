@@ -5,7 +5,7 @@ const Header = () => {
   return(
     <>
       <header>
-          <h1 className="py-4 px-3"><img className='is-centered' src="/assets/icon-left-font-monochrome-black.svg" width="200" alt="Groupomania" /></h1>
+          <h1 className=""><img className='is-centered' src="/assets/icon-left-font-monochrome-black.svg" width="200" alt="Groupomania" /></h1>
           <div className="tabs is-centered">
               <ul>
                   <li>

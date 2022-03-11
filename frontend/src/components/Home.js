@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [prenom, setPrenom] = useState('');
   const [userImg, setUserImg] = useState('');
   const [email, setEmail] = useState('');
+  const [isAdmin, setAdmin] = useState('');
   const [token, setToken] = useState('');
   const [expire, setExpire] = useState('');
   const [posts, setPosts] = useState([]);
@@ -41,6 +42,7 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setEmail(decoded.email);
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       } catch (error) {
           if (error.response) {
@@ -62,6 +64,7 @@ const Dashboard = () => {
           setPrenom(decoded.prenom);
           setUserImg(decoded.userImg);
           setEmail(decoded.email);
+          setAdmin(decoded.isAdmin);
           setExpire(decoded.exp);
       }
       return config;
@@ -74,15 +77,14 @@ const Dashboard = () => {
     prenom: `${prenom}`,
     email: `${email}`,
     userImg: `${userImg}`,
-    postMsg: "",
-    postImg: ""
+    postMsg: ""
   };
 
   const validationSchema = Yup.object().shape({
     postMsg: Yup.string().min(1, "Le message doit contenir au moins 1 caractère").required("")
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data, {resetForm}) => {
     console.log(data);
     try {
         await axios.post('http://localhost:5000/posts', data);
@@ -92,9 +94,9 @@ const Dashboard = () => {
           email: `${email}`,
           userImg: `${userImg}`,
           postMsg: data.postMsg,
-          postImg: data.postImg
         };
         setPosts([...posts, postToAdd]);
+        resetForm({ values: ''});
         navigate("/home", { replace: true });
         // window.location.reload();
     } catch (error) {
@@ -111,6 +113,19 @@ const Dashboard = () => {
         }
     });
     setPosts(response.data);
+  }
+
+  const deletePost = async (postId) => {
+    try {
+      if (window.confirm("Voulez-vous vraiment supprimer ce message ?")) {
+        await axios.delete(`http://localhost:5000/posts/id/${postId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate("/home", { replace: true }); 
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const LastSeen = (date) => {
@@ -150,52 +165,33 @@ const Dashboard = () => {
         </section>
 
         <section className="tousLesMessages mt-5">
-          {posts.slice(0).reverse().map((post, index) => {
-          return post.nom === `${nom}` ?
-          <div key={index} className="card mb-5">
-            <div className="card-content">
-              <div className="media">
-                <div className="media-left">
-                  <figure className="image is-48x48">
-                  <img className="userImg is-rounded" src={'images/profilepictures/' + post.userImg} alt='pp' />
-                  </figure>
+        { posts.slice(0).reverse().map((post, index) => {
+            return(
+            <div key={index} className="card mb-5">
+              <div className="card-content">
+                <div className="media">
+                  <div className="media-left">
+                    <figure className="image is-48x48">
+                    <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
+                    </figure>
+                  </div>
+                  <div className="media-content">
+                    <p className="title is-size-6 has-text-info-dark">
+                      <NavLink to={'../profile/' + post.userId} className={isAdmin == 1 && post.userId == myId ? 
+                        ("title is-size-6 p-1 has-text-danger mb-5") : ("title is-size-6 p-1 has-text-info-dark mb-5")}>
+                      {post.prenom} {post.nom}</NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
+                    </p>
+                    <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                  </div>
                 </div>
-                <div className="media-content">
-                <p className="title is-size-6 has-text-info-dark">
-                  <NavLink to={'../profile/' + post.userId} className="">
-                  {post.prenom} {post.nom} </NavLink> <span className="has-text-grey has-text-weight-light">{post.email}</span>
-                </p>
-                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                <div className="content pb-5">
+                  <p>{post.postMsg}</p>
+                  {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {deletePost(post.id)}}>Supprimer</button>) : ('')}
                 </div>
               </div>
-              <div className="content">
-                <p>{post.postMsg}</p>
-              </div>
             </div>
-          </div>
-          :
-          <div key={index} className="card mb-5">
-          <div className="card-content">
-            <div className="media">
-              <div className="media-left">
-                <figure className="image is-48x48">
-                <img className="userImg is-rounded" src={'images/profilepictures/' + post.userImg} alt='pp' />
-                </figure>
-              </div>
-              <div className="media-content">
-                <p className="title is-size-6 has-text-grey-dark">
-                  <NavLink to={'../profile/' + post.userId} className="">
-                  {post.prenom} {post.nom} </NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
-                </p>
-                <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
-              </div>
-            </div>
-            <div className="content">
-              <p>{post.postMsg}</p>
-            </div>
-          </div>
-        </div>
-        })}
+            )
+          })}
         </section>
     </>
   );

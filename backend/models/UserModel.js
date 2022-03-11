@@ -10,14 +10,15 @@ const Users = db.define('users',
         prenom: { type: DataTypes.STRING, allowNull: false },
         email: { type: DataTypes.STRING, allowNull: false },
         userImg: { type: DataTypes.STRING, allowNull: true },
+        isAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
         password: { type: DataTypes.STRING, allowNull: false },
         refresh_token: { type: DataTypes.TEXT }
     }
 );
 
-Users.hasMany(Posts);
+Users.hasMany(Posts, {
+    onDelete: 'CASCADE'
+});
 Posts.belongsTo(Users);
-
-// (async () => { await db.sync(); })();
 
 export default Users;

@@ -9,6 +9,6 @@ router.post('/', publishPost);
 router.get('/id/:id', verifyToken, getMyPosts);
 router.get('/', verifyToken, getPosts);
 router.get('/token', refreshToken);
-router.delete('/:id', verifyToken, deletePost);
+router.delete('/id/:id', verifyToken, deletePost);
  
 export default router;
