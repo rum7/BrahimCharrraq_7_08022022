@@ -4,6 +4,7 @@ import Users from "../models/UserModel.js";
 export const getMyPosts = async(req, res) => {
     try {
         const posts = await Posts.findAll({
+            include: [{ model: Users }],
             where:{ userId: req.params.id }
         });
         res.json(posts);
@@ -14,7 +15,9 @@ export const getMyPosts = async(req, res) => {
 
 export const getPosts = async(req, res) => {
     try {
-        const posts = await Posts.findAll({});
+        const posts = await Posts.findAll({
+            include: [{ model: Users }]
+        });
         res.json(posts);
     } catch (error) {
         res.json({ msg: error.msg });

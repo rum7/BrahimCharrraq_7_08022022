@@ -73,10 +73,6 @@ const Dashboard = () => {
   });
 
   const initialValues = {
-    nom: `${nom}`,
-    prenom: `${prenom}`,
-    email: `${email}`,
-    userImg: `${userImg}`,
     postMsg: ""
   };
 
@@ -88,14 +84,7 @@ const Dashboard = () => {
     console.log(data);
     try {
         await axios.post('http://localhost:5000/posts', data);
-        const postToAdd = {
-          nom: `${nom}`,
-          prenom: `${prenom}`,
-          email: `${email}`,
-          userImg: `${userImg}`,
-          postMsg: data.postMsg,
-        };
-        setPosts([...posts, postToAdd]);
+        setPosts([posts]);
         resetForm({ values: ''});
         navigate("/home", { replace: true });
         // window.location.reload();
@@ -172,15 +161,16 @@ const Dashboard = () => {
                 <div className="media">
                   <div className="media-left">
                     <figure className="image is-48x48">
-                    <img className="userImg is-rounded" src={'../images/profilepictures/' + post.userImg} alt='pp' />
+                    <img className="userImg is-rounded" src={'../images/profilepictures/' + post.user.userImg} alt='pp' />
                     </figure>
                   </div>
                   <div className="media-content">
-                    <p className="title is-size-6 has-text-info-dark">
-                      <NavLink to={'../profile/' + post.userId} className="title is-size-6 p-1 has-text-info-dark mb-5">
-                      {post.prenom} {post.nom}</NavLink><span className="has-text-grey has-text-weight-light">{post.email}</span>
+                    <p className="">
+                      <NavLink to={'../profile/' + post.user.userId} 
+                      className={post.user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-1") : ("title is-size-6 has-text-info-dark mb-5")}>
+                      {post.user.prenom} {post.user.nom}</NavLink><span className="has-text-grey has-text-weight-light ml-1">{post.user.email}</span>
                     </p>
-                    <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
+                    <p className="is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
                   </div>
                 </div>
                 <div className="content pb-5">

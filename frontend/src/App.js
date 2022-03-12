@@ -34,7 +34,7 @@ function Connected() {
 }
 
 const App = () => {
-  let { id } = useParams();
+  // let { id } = useParams();
 
   return (
     <div className="container is-fluid p-0">
