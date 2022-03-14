@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRoute.js";
 import postRouter from "./routes/postRoute.js";
+import comRouter from "./routes/commentRoute.js";
 dotenv.config();
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
+app.use("/comments", comRouter);
  
 app.use(express.static('public'));
 

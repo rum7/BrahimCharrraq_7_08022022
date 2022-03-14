@@ -141,6 +141,24 @@ main.layout {
     /* FIN MES INFOS */
 
     /* DEBUT TOUS LES MESSAGES */
+    section.mesInfos div.postPage {
+        border-radius: .85rem .85rem 0 0;
+        border-bottom: 0;
+    }
+    section.mesInfos div.postPageForm {
+        border-radius: 0 0 .85rem .85rem;
+    }
+    section.comlist div.cardList {
+        border-radius: 0;
+        border-bottom: 0;
+    }
+    section.comlist div.cardList:first-child {
+        border-radius: .85rem .85rem 0 0;
+    }
+    section.comlist div.cardList:last-child {
+        border-radius: 0 0 .85rem .85rem;
+        border-bottom: 1px solid #e8e8e8;
+    }
     /* FIN TOUS LES MESSAGES */
 
 

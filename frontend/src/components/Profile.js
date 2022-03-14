@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, NavLink } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 
@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [expire, setExpire] = useState('');
   const [user, setUser] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
   const navigate = useNavigate(); 
 
   const { id } = useParams();
@@ -25,6 +26,7 @@ const Dashboard = () => {
       refreshToken();
       getUser();
       getMyPosts();
+      getComByUser();
   }, [location.key]);
 
   const refreshToken = async () => {
@@ -59,7 +61,7 @@ const Dashboard = () => {
   });
 
   const getMyPosts = async () => {
-    const response = await axiosJWT.get(`http://localhost:5000/posts/id/${id}`, {
+    const response = await axiosJWT.get(`http://localhost:5000/posts/user/${id}`, {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -103,6 +105,15 @@ const Dashboard = () => {
     }
   }
 
+  const getComByUser = async () => {
+    const response = await axiosJWT.get(`http://localhost:5000/comments/user/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    setComments(response.data);
+  }
+
   const LastSeen = (date) => {
     return (<TimeAgo datetime={date} locale='fr' />);
   }
@@ -119,20 +130,25 @@ const Dashboard = () => {
                   </figure>
                 </div>
                 <div className="media-content">
-                  <p className={user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-2") : ("title is-size-6 has-text-info-dark mb-5")}>
+                  <p className={user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-2") : ("title is-size-6 has-text-info-dark mb-2")}>
                     {user.prenom} {user.nom}<span className="has-text-grey has-text-weight-light ml-1">{user.email}</span>
                   </p>
-                  <p className="is-italic is-size-7 has-text-grey mb-2"> À rejoint l'équipe {LastSeen(user.createdAt)}</p>
-                  <p className="is-italic is-size-7 has-text-grey"> A publié {posts.length == 0 ? ('') : (
-                    posts.length == 1 ? (posts.length + ' message') : (posts.length + ' messages')
+                  <p className="is-italic is-size-7 has-text-grey mb-2"> A rejoint l'équipe {LastSeen(user.createdAt)}</p>
+                  <p className="is-italic is-size-7 has-text-grey mb-2">{posts.length == 0 ? ("N'a publié aucun message") : (
+                    posts.length == 1 ? ('A publié ' + posts.length + ' message') : ('A publié ' + posts.length + ' messages')
                   )}
                   </p>
-
+                  <p className="is-italic is-size-7 has-text-grey">{comments.length == 0 ? ("N'a publié aucun commentaire") : (
+                    comments.length == 1 ? ('A publié ' + comments.length + ' commentaire') : ('A publié ' + comments.length + ' commentaires')
+                  )}
+                  </p>
                 </div>
               </div>
-              <div className="content pb-5">
-                {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {delUser(user.id)}}>Supprimer</button>) : ('')}
-              </div>
+                {isAdmin == 1 ? (
+                <div className="content pb-5">
+                  <button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {delUser(user.id)}}>Supprimer</button>
+                </div>
+                ) : ('')}
             </div>
           </div>
         </section>
@@ -155,8 +171,13 @@ const Dashboard = () => {
                     <p className="subtitle is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
                   </div>
                 </div>
-                <div className="content pb-5">
+                <div className="content">
                   <p>{post.postMsg}</p>
+                  {post.comments.length == 0 ? (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light">Commenter</NavLink>) 
+                    : (post.comments.length == 1 ? 
+                      (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light"><span className="has-text-weight-bold mr-1">{post.comments.length}</span>commentaire</NavLink>) 
+                    : (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light"><span className="has-text-weight-bold mr-1">{post.comments.length}</span>commentaires</NavLink>)
+                  )}
                   {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {deletePost(post.id)}}>Supprimer</button>) : ('')}
                 </div>
               </div>

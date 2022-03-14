@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize";
 import db from "../config/Database.js";
 import Posts from "./PostModel.js";
+import Comments from "./CommentModel.js";
 
 const { DataTypes } = Sequelize;
 
@@ -16,9 +17,12 @@ const Users = db.define('users',
     }
 );
 
-Users.hasMany(Posts, {
-    onDelete: 'CASCADE'
-});
+Users.hasMany(Posts, {onDelete: 'CASCADE'});
+Users.hasMany(Comments, {onDelete: 'CASCADE'});
 Posts.belongsTo(Users);
+Comments.belongsTo(Users);
+
+Posts.hasMany(Comments, {onDelete: 'CASCADE'});
+Comments.belongsTo(Posts);
 
 export default Users;

@@ -84,8 +84,8 @@ const Dashboard = () => {
     console.log(data);
     try {
         await axios.post('http://localhost:5000/posts', data);
-        setPosts([posts]);
-        resetForm({ values: ''});
+        setPosts(posts);
+        resetForm({values: ''});
         navigate("/home", { replace: true });
         // window.location.reload();
     } catch (error) {
@@ -121,8 +121,9 @@ const Dashboard = () => {
     return (<TimeAgo datetime={date} locale='fr' />);
   }
 
+
   return(
-    <>
+    <>  
         <section className="mesInfos">
           <div className="card">
             <div className="card-content">
@@ -154,7 +155,7 @@ const Dashboard = () => {
         </section>
 
         <section className="tousLesMessages mt-5">
-        { posts.slice(0).reverse().map((post, index) => {
+        { posts.map((post, index) => {
             return(
             <div key={index} className="card mb-5">
               <div className="card-content">
@@ -166,15 +167,20 @@ const Dashboard = () => {
                   </div>
                   <div className="media-content">
                     <p className="">
-                      <NavLink to={'../profile/' + post.user.userId} 
+                      <NavLink to={'../profile/' + post.userId} 
                       className={post.user.isAdmin == 1 ? ("title is-size-6 has-text-danger-dark mb-1") : ("title is-size-6 has-text-info-dark mb-5")}>
                       {post.user.prenom} {post.user.nom}</NavLink><span className="has-text-grey has-text-weight-light ml-1">{post.user.email}</span>
                     </p>
                     <p className="is-size-7 has-text-grey">{LastSeen(post.createdAt)}</p>
                   </div>
                 </div>
-                <div className="content pb-5">
-                  <p>{post.postMsg}</p>
+                <div className="content">
+                <p>{post.postMsg}</p>
+                  {post.comments.length == 0 ? (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light">Commenter</NavLink>) 
+                    : (post.comments.length == 1 ? 
+                      (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light"><span className="has-text-weight-bold mr-1">{post.comments.length}</span>commentaire</NavLink>) 
+                    : (<NavLink to={'../post/' + post.id} className="button is-small is-link is-light"><span className="has-text-weight-bold mr-1">{post.comments.length}</span>commentaires</NavLink>)
+                  )}
                   {isAdmin == 1 ? (<button type='button' className="button is-pulled-right is-danger is-outlined" onClick={() => {deletePost(post.id)}}>Supprimer</button>) : ('')}
                 </div>
               </div>
